@@ -1,3 +1,18 @@
+- restConfiguration:
+    component: platform-http
+    host: 127.0.0.1
+    port: "8080"
+    contextPath: /api-doc
+    bindingMode: json
+- rest:
+    id: rest-26c9
+    disabled: false
+    path: /myService
+    get:
+      - id: get-5d4a
+        to: direct:direct-get
+        bindingMode: json
+        clientRequestValidation: false
 - route:
     id: route-1860
     nodePrefixId: route-578
@@ -19,3 +34,19 @@
             id: log-4af4
             message: ${body}
             loggingLevel: INFO
+- route:
+    id: direct-get
+    nodePrefixId: node-573
+    from:
+      id: from-ec17
+      uri: direct
+      variableReceive: global:undefined
+      parameters:
+        name: direct-get
+      steps:
+        - script:
+            id: script-1ee0
+            expression:
+              groovy:
+                id: groovy-3c96
+                expression: "// Script 'main'\r\n            log.info(\"MAIN: Processando invoice...\")\r\n            // Converte o JSON recebido para um Mapa Groovy\r\n            def invoice = body;\r\n            log.info(\"Conteúdo do invoice2: ${invoice}\")\r\n            \r\n            // Adiciona novos campos\r\n            invoice['abner'] = 'INV-12345'\r\n            invoice['status'] = 'PROCESSED'\r\n            \r\n            // Define o mapa modificado como o novo corpo\r\n            body = invoice"
