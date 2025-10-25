@@ -45,6 +45,26 @@
         name: direct-get
       steps:
         - script:
+            id: script-55be
+            expression:
+              groovy:
+                id: groovy-c3b6
+                expression: "\r\ndef contact = body;\r\nlog.info(\"Conteúdo do contact: ${contact}\")\r\n// Adiciona novos campos\r\ncontact['username'] = 'oscerd'\r\ncontact['city'] = 'Rome'\r\n\r\nlog.info(\"Conteúdo do contact: ${contact}\")\r\n\r\n\r\n\r\n\r\n// Define o mapa modificado como o novo corpo\r\nbody = contact\r\n\r\n\r\nlog.info(\"Conteúdo do contact: ${body}\")"
+        - marshal:
+            id: marshal-3328
+            json:
+              id: json-4d91
+        - to:
+            id: to-817d
+            uri: kamelet:oracle-database-sink
+            parameters:
+              serverName: twoone-dev.maxapex.net
+              databaseName: XEPDB1
+              query: INSERT INTO accounts (username,city) VALUES (:#username,:#city)
+              password: "{{twoapps.datasource.password}}"
+              serverPort: 1521
+              username: "{{twoapps.datasource.username}}"
+        - script:
             id: script-1ee0
             expression:
               groovy:
