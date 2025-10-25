@@ -13,6 +13,14 @@
         to: direct:direct-get
         bindingMode: json
         clientRequestValidation: false
+- beans:
+    - name: OracleDatabase
+      type: "#class:org.apache.commons.dbcp2.BasicDataSource"
+      properties:
+        username: TWOAPPS
+        password: XJSSPSMB4JNN9
+        url: jdbc:oracle:thin:@twoone-dev.maxapex.net:1521/XEPDB1
+        driverClassName: oracle.jdbc.driver.OracleDriver
 - route:
     id: route-1860
     nodePrefixId: route-578
@@ -47,13 +55,13 @@
         - doTry:
             id: doTry-3052
             doCatch:
-              - id: doCatch-d714
+              - id: doCatch-ac92
                 exception:
                   - java.lang.Exception
                 steps:
                   - log:
-                      id: log-d098
-                      message: "ERRO CAPTURADO: ${exception.message}"
+                      id: log-4ff5
+                      message: "\"ERRO CAPTURADO: ${exception.message}\""
             steps:
               - marshal:
                   id: marshal-3328
@@ -64,28 +72,24 @@
                   uri: json-validator
                   parameters:
                     resourceUri: file:/karavan/code/meu-schema.json
+              - unmarshal:
+                  id: unmarshal-cf4d
+                  json:
+                    id: json-cbe7
               - script:
                   id: script-55be
                   expression:
                     groovy:
                       id: groovy-c3b6
-                      expression: "\r\ndef contact = body;\r\nlog.info(\"Conteúdo do contact: ${contact}\")\r\n// Adiciona novos campos\r\ncontact['username'] = 'oscerd'\r\ncontact['city'] = 'Rome'\r\n\r\nlog.info(\"Conteúdo do contact: ${contact}\")\r\n\r\n\r\n\r\n\r\n// Define o mapa modificado como o novo corpo\r\nbody = contact\r\n\r\n\r\nlog.info(\"Conteúdo do contact: ${body}\")"
+                      expression: "\r\ndef contact = body;\r\nlog.info(\"Conteúdo do contact: ${contact}\")\r\n// Adiciona novos campos\r\n//contact['username'] = 'oscerd'\r\n//contact['city'] = 'Rome'\r\n\r\nlog.info(\"Conteúdo do contact: ${contact}\")\r\n\r\n\r\n\r\n\r\n// Define o mapa modificado como o novo corpo\r\nbody = contact\r\n\r\n\r\nlog.info(\"Conteúdo do contact: ${body}\")"
               - to:
-                  id: to-817d
-                  uri: kamelet:oracle-database-sink
+                  id: to-ba62
+                  uri: sql
                   parameters:
-                    serverName: twoone-dev.maxapex.net
-                    databaseName: XEPDB1
                     query: >-
                       INSERT INTO accounts (username,city) VALUES
                       (:#username,:#city)
-                    password: "{{twoapps.datasource.password}}"
-                    serverPort: 1521
-                    username: "{{twoapps.datasource.username}}"
-              - marshal:
-                  id: marshal-b54a
-                  json:
-                    id: json-96ea
+                    dataSource: "#bean:OracleDatabase"
               - script:
                   id: script-1ee0
                   expression:
