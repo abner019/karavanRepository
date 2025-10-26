@@ -1,0 +1,156 @@
+- restConfiguration:
+    component: platform-http
+    contextPath: /opengarage
+    bindingMode: json
+- rest:
+    id: rest-26c9
+    disabled: false
+    path: /Account
+    post:
+      - id: post-8744
+        path: /create
+        to: direct:direct-create-account
+      - id: post-80f2
+        path: /Upload
+        to: direct:upload-many-accounts
+- beans:
+    - name: OracleDatabase
+      type: "#class:org.apache.commons.dbcp2.BasicDataSource"
+      properties:
+        username: TWOAPPS
+        password: XJSSPSMB4JNN9
+        url: jdbc:oracle:thin:@twoone-dev.maxapex.net:1521/XEPDB1
+        driverClassName: oracle.jdbc.driver.OracleDriver
+- route:
+    id: route-1860
+    nodePrefixId: route-578
+    from:
+      id: from-5fa8
+      uri: timer
+      parameters:
+        timerName: Hello World
+        delay: "10000"
+        repeatCount: "1"
+      steps:
+        - setBody:
+            id: setBody-c665
+            expression:
+              constant:
+                id: constant-ca32
+                expression: Hello
+        - log:
+            id: log-4af4
+            message: ${body}
+            loggingLevel: INFO
+- route:
+    id: direct-create-account
+    nodePrefixId: node-573
+    from:
+      id: from-ec17
+      uri: direct
+      variableReceive: "global:"
+      parameters:
+        name: direct-create-account
+      steps:
+        - setVariables:
+            id: setVariables-44ae
+            variables:
+              - id: setVariable-fca4
+                name: v_Name
+                expression:
+                  constant:
+                    id: constant-f76c
+                    expression: "'Abner Bessi Goncalves'"
+              - id: setVariable-2046
+                name: v_idade
+                expression:
+                  groovy:
+                    id: groovy-a825
+                    expression: "def anoAtual = 2025; \r\n\r\ndef anoNasc = 1990; \r\n\r\nreturn anoAtual - anoNasc;"
+        - log:
+            id: log-2ac3
+            message: >-
+              O valor de v_Name é: ${variable.v_Name} e a idade
+              ${variable.v_idade} hot_reload
+        - doTry:
+            id: doTry-3052
+            doCatch:
+              - id: doCatch-ac92
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - log:
+                      id: log-4ff5
+                      message: "\"ERRO CAPTURADO: ${exception.message}\""
+            steps:
+              - marshal:
+                  id: marshal-3328
+                  json:
+                    id: json-4d91
+              - to:
+                  id: to-6633
+                  uri: json-validator
+                  parameters:
+                    resourceUri: file:/karavan/code/meu-schema.json
+              - unmarshal:
+                  id: unmarshal-cf4d
+                  json:
+                    id: json-cbe7
+              - script:
+                  id: script-55be
+                  expression:
+                    groovy:
+                      id: groovy-c3b6
+                      expression: "\r\ndef contact = body;\r\nlog.info(\"Conteúdo do contact: ${contact}\")\r\n// Adiciona novos campos\r\n//contact['username'] = 'oscerd'\r\n//contact['city'] = 'Rome'\r\n\r\nlog.info(\"Conteúdo do contact: ${contact}\")\r\n\r\n\r\n\r\n\r\n// Define o mapa modificado como o novo corpo\r\nbody = contact\r\n\r\n\r\nlog.info(\"Conteúdo do contact: ${body}\")"
+              - loop:
+                  id: loop-0760
+                  expression:
+                    constant:
+                      id: constant-4cfa
+                      expression: "10"
+                  steps:
+                    - log:
+                        id: log-2fc6
+                        message: "Esta é a iteração: ${exchangeProperty.CamelLoopIndex}"
+              - to:
+                  id: to-ba62
+                  uri: sql
+                  parameters:
+                    query: >-
+                      INSERT INTO accounts (username,city) VALUES
+                      (:#username,:#city)
+                    dataSource: "#bean:OracleDatabase"
+              - script:
+                  id: script-1ee0
+                  expression:
+                    groovy:
+                      id: groovy-3c96
+                      expression: "// Script 'main'\r\n            log.info(\"MAIN: Processando invoice...\")\r\n            // Converte o JSON recebido para um Mapa Groovy\r\n            def invoice = body;\r\n            log.info(\"Conteúdo do invoice2: ${invoice}\")\r\n            \r\n            // Adiciona novos campos\r\n            invoice['abner'] = 'INV-12345'\r\n            invoice['status'] = 'PROCESSED'\r\n            \r\n            // Define o mapa modificado como o novo corpo\r\n            body = invoice"
+- route:
+    id: upload-many-accounts
+    from:
+      id: from-5b12
+      uri: direct
+      parameters:
+        name: upload-many-accounts
+      steps:
+        - log:
+            id: log-4b94
+            message: create-upload-many
+        - split:
+            id: split-2db0
+            expression:
+              groovy:
+                id: groovy-91aa
+                expression: body
+            steps:
+              - log:
+                  id: log-0a8c
+                  message: ${body}
+              - to:
+                  id: to-766a
+                  uri: direct
+                  pattern: InOut
+                  parameters:
+                    name: direct-create-account
+                    synchronous: true
