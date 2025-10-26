@@ -13,6 +13,14 @@
         to: direct:direct-get
         bindingMode: json
         clientRequestValidation: false
+- beans:
+    - name: OracleDatabase
+      type: "#class:org.apache.commons.dbcp2.BasicDataSource"
+      properties:
+        username: TWOAPPS
+        password: XJSSPSMB4JNN9
+        url: jdbc:oracle:thin:@twoone-dev.maxapex.net:1521/XEPDB1
+        driverClassName: oracle.jdbc.driver.OracleDriver
 - route:
     id: route-1860
     nodePrefixId: route-578
@@ -44,6 +52,26 @@
       parameters:
         name: direct-get
       steps:
+        - setVariables:
+            id: setVariables-44ae
+            variables:
+              - id: setVariable-fca4
+                name: v_Name
+                expression:
+                  constant:
+                    id: constant-f76c
+                    expression: "'Abner Bessi Goncalves'"
+              - id: setVariable-2046
+                name: v_idade
+                expression:
+                  groovy:
+                    id: groovy-a825
+                    expression: "def anoAtual = 2025; \r\n\r\ndef anoNasc = 1990; \r\n\r\nreturn anoAtual - anoNasc;"
+        - log:
+            id: log-2ac3
+            message: >-
+              O valor de v_Name é: ${variable.v_Name} e a idade
+              ${variable.v_idade} hot_reload
         - doTry:
             id: doTry-3052
             doCatch:
@@ -74,6 +102,16 @@
                     groovy:
                       id: groovy-c3b6
                       expression: "\r\ndef contact = body;\r\nlog.info(\"Conteúdo do contact: ${contact}\")\r\n// Adiciona novos campos\r\n//contact['username'] = 'oscerd'\r\n//contact['city'] = 'Rome'\r\n\r\nlog.info(\"Conteúdo do contact: ${contact}\")\r\n\r\n\r\n\r\n\r\n// Define o mapa modificado como o novo corpo\r\nbody = contact\r\n\r\n\r\nlog.info(\"Conteúdo do contact: ${body}\")"
+              - loop:
+                  id: loop-0760
+                  expression:
+                    constant:
+                      id: constant-4cfa
+                      expression: "10"
+                  steps:
+                    - log:
+                        id: log-2fc6
+                        message: "Esta é a iteração: ${exchangeProperty.CamelLoopIndex}"
               - to:
                   id: to-ba62
                   uri: sql
@@ -88,11 +126,3 @@
                     groovy:
                       id: groovy-3c96
                       expression: "// Script 'main'\r\n            log.info(\"MAIN: Processando invoice...\")\r\n            // Converte o JSON recebido para um Mapa Groovy\r\n            def invoice = body;\r\n            log.info(\"Conteúdo do invoice2: ${invoice}\")\r\n            \r\n            // Adiciona novos campos\r\n            invoice['abner'] = 'INV-12345'\r\n            invoice['status'] = 'PROCESSED'\r\n            \r\n            // Define o mapa modificado como o novo corpo\r\n            body = invoice"
-- beans:
-    - name: OracleDatabase
-      type: "#class:org.apache.commons.dbcp2.BasicDataSource"
-      properties:
-        username: TWOAPPS
-        password: XJSSPSMB4JNN9
-        url: jdbc:oracle:thin:@twoone-dev.maxapex.net:1521/XEPDB1
-        driverClassName: oracle.jdbc.driver.OracleDriver
