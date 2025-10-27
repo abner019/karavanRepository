@@ -10,17 +10,10 @@
       - id: post-8744
         path: /create
         to: direct:direct-create-account
+        consumes: application/json
       - id: post-80f2
         path: /Upload
         to: direct:upload-many-accounts
-- beans:
-    - name: OracleDatabase
-      type: "#class:org.apache.commons.dbcp2.BasicDataSource"
-      properties:
-        username: TWOAPPS
-        password: XJSSPSMB4JNN9
-        url: jdbc:oracle:thin:@twoone-dev.maxapex.net:1521/XEPDB1
-        driverClassName: oracle.jdbc.driver.OracleDriver
 - route:
     id: route-1860
     nodePrefixId: route-578
@@ -45,13 +38,18 @@
 - route:
     id: direct-create-account
     nodePrefixId: node-573
+    streamCache: false
+    trace: true
     from:
       id: from-ec17
       uri: direct
-      variableReceive: "global:"
       parameters:
         name: direct-create-account
+        synchronous: false
       steps:
+        - log:
+            id: log-b6af
+            message: ${body}
         - setVariables:
             id: setVariables-44ae
             variables:
@@ -128,9 +126,13 @@
                       expression: "// Script 'main'\r\n            log.info(\"MAIN: Processando invoice...\")\r\n            // Converte o JSON recebido para um Mapa Groovy\r\n            def invoice = body;\r\n            log.info(\"Conteúdo do invoice2: ${invoice}\")\r\n            \r\n            // Adiciona novos campos\r\n            invoice['abner'] = 'INV-12345'\r\n            invoice['status'] = 'PROCESSED'\r\n            \r\n            // Define o mapa modificado como o novo corpo\r\n            body = invoice"
 - route:
     id: upload-many-accounts
+    nodePrefixId: node-575
+    streamCache: false
+    trace: true
     from:
       id: from-5b12
       uri: direct
+      variableReceive: global:undefined
       parameters:
         name: upload-many-accounts
       steps:
@@ -150,7 +152,14 @@
               - to:
                   id: to-766a
                   uri: direct
-                  pattern: InOut
                   parameters:
                     name: direct-create-account
                     synchronous: true
+- beans:
+    - name: OracleDatabase
+      type: "#class:org.apache.commons.dbcp2.BasicDataSource"
+      properties:
+        username: TWOAPPS
+        password: XJSSPSMB4JNN9
+        url: jdbc:oracle:thin:@twoone-dev.maxapex.net:1521/XEPDB1
+        driverClassName: oracle.jdbc.driver.OracleDriver
